@@ -3,6 +3,27 @@
 Wrappers for virtualbox emulating the functionality of zones in the absence of time.
 
 
+## Commands we use all the time.
+### Installing Scripts
+Create ~/bin
+Modify the PATH if necessary
+Record changes to file or SQLite
+Check for SQLite and other programs
+"Install" by linking to executable dir.
+Uninstall by removing said links.
+Get other files within the same directory.
+Know where we're executing from.
+
+### Setting flags
+Flags are always changing depending on options to programs.
+
+### Generating options
+Still no good quick way to do this, but there's probably some good quick way out there.
+
+### Running in debug mode.
+Use `echo` before every command to see what would happen.
+
+
 ## Global Functions
 - _get_vm_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
 - _update_vm_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
@@ -12,19 +33,42 @@ Wrappers for virtualbox emulating the functionality of zones in the absence of t
 ## vmgo
 
 Install this mess..
-	mkdir -p ...
+x	mkdir -p ...
 	sqlite3 load etc stuff and junk
 	*setup some server somewhere to sync vm'=s... 
+
 Rebuild databases....
+
+Update virtualbox
+
+
 --first-run               Build databases and all that jazz.
 --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
+--update                  Update virtualbox.
+--download                ...
+
+
+## vmbackend
+
+Management of virtualbox itself
+
+You can build for local testing by using the source code and forget root.
+http://download.virtualbox.org/virtualbox/4.3.0/VirtualBox-4.3.0.tar.bz2
+
+
+When you're really ready to build, use something else...
 
 
 ## vmimg
 
 Images are a continual problem.  Whether I set them up or not...
 They should be stored somewhere...
+
+--refresh  Get the newest list of images.
+--download Download said images.
+--alias    Set names for images.
+
 
 
 ## vmdefault
