@@ -5,12 +5,26 @@ Wrappers for virtualbox emulating the functionality of zones in the absence of t
 
 ## Global Functions
 - _get_vm_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
+- _update_vm_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
+- _remove_item_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
 
 
 ## vmgo
 
+Install this mess..
+	mkdir -p ...
+	sqlite3 load etc stuff and junk
+	*setup some server somewhere to sync vm'=s... 
+Rebuild databases....
 --first-run               Build databases and all that jazz.
 --rebuild                 Rebuild databases for new versions.
+--no-server-setup         Skip the whole server setup step.
+
+
+## vmimg
+
+Images are a continual problem.  Whether I set them up or not...
+They should be stored somewhere...
 
 
 ## vmdefault
@@ -54,13 +68,13 @@ Build a guest containing some image.
 
 Start, stop, rotate, flip around, make sing and dance different VM's.
 
--l     Lists all VMs.
+- -l     Lists all VMs
 	Needs much more information: 
 		uuid w/o brackets
 		date of last modify
 		purpose of vm
 
--f     Starts a new process in the foreground.
+x -f     Starts a new process in the foreground.
 	Indicate machine with argument	
 -p     Starts a new (set of) VM(s) according to a profile.
 	Add to db to start a profile
@@ -70,8 +84,10 @@ Start, stop, rotate, flip around, make sing and dance different VM's.
 -k     Stop an instance of a VM. or profiles
 -r     Restart an instance of a VM.
 -s     Take a snapshot of a VM.
--h     Show this help message and quit.
+x -h     Show this help message and quit.
+-a     Set an alias for a machine.
 
+## vmmulti
 
 ## vmsec
 
