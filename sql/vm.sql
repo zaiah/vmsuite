@@ -19,6 +19,24 @@ CREATE TABLE disk_img (
 
 
 /******************************************************
+* settings
+* 
+* Where do we hold settings?
+******************************************************/
+CREATE TABLE settings (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	host_dir TEXT,				/* Where did we install program files? */
+	install_dir TEXT,			/* Where did we leave executable links? */
+	install_date TEXT,		/* When did we install this? */
+	vbox_type TEXT,			/* Local (no root) or Systemwide? */
+	vbox_bin TEXT,				/* Path to virtualbox executable */
+	profile_name TEXT,		/* Can switch depending on versions */
+	user_owner TEXT			/* User who installed */
+);
+
+
+
+/******************************************************
 * vm_img 
 * 
 * The .vdi files.
@@ -67,6 +85,13 @@ CREATE TABLE servers (
 	server_domainname TEXT
 );
 
+/******************************************************
+* keys 
+* 
+* SSH keys for server management.
+******************************************************/
 CREATE TABLE keys (
-	id INTEGER PRIMARY KEY AUTOINCREMENT
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	key_name TEXT,
+	key_location TEXT
 );

@@ -34,8 +34,8 @@ BINDIR="$(dirname "$(readlink -f $0)")"   # The program's directory.
 
 # Giant list that will be maintanined here.
 __SQLITE="/usr/bin/sqlite3"
-DIR="$HOME/.vmsuite"
-DB="$HOME/.vmsuite/vm.db"
+HOST_DIR="$HOME/.vmsuite"
+DB="$HOST_DIR/vm.db"
 
 # Program directories.
 BIN_SQL_DIR="$BINDIR/sql"
@@ -45,6 +45,7 @@ HOST_ISO_DIR="$DIR/img"
 HOST_VBOX_DIR="$DIR/vbox"
 HOST_KEY_DIR="$DIR/keys"
 HOST_FILE_DIR="$DIR/file"
+HOST_INSTALL_DIRECTORY="$HOME/bin"
 
 # Handle strings or numbers.
 convert_val() {
@@ -60,7 +61,7 @@ esac
 
 # _get_vm_by_id() 
 # Retrieve a vm by ID.  Don't repeat anywhere.
-get_vm_by_id() {
+get_by_id() {
 	# If no parameters given, throw this back.
 	echo $($__SQLITE $DB "SELECT id FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
 }
@@ -68,19 +69,23 @@ get_vm_by_id() {
 
 # _update_vm_by_id() 
 # Retrieve a vm by ID.  Don't repeat anywhere.
-update_vm_by_id() {
-	echo "..."
+update_by_id() {
+	# If no parameters given, throw this back.
+	DB_ID=$($__SQLITE $DB "SELECT id FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
+	echo $($__SQLITE $DB "SELECT id FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
 }
 
 
 # _remove_item_by_id() 
 # Retrieve a vm by ID.  Don't repeat anywhere.
-remove_item_by_id() {
-	echo "..."
+remove_by_id() {
+	DB_ID=$($__SQLITE $DB "SELECT id FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
+	echo $($__SQLITE $DB "DELETE FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
 }
 
 
 # Set all flags.
+eval_flags() {
 if [ ! -z $VERBOSE ]
 then
 	MV_FLAGS="-v"
@@ -103,6 +108,4 @@ else
 	SCP_FLAGS=
 	RM_FLAGS="-rf"
 fi
-
-
-
+}

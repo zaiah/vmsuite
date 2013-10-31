@@ -46,6 +46,7 @@ Update virtualbox
 --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
 --update                  Update virtualbox.
+--clobber                 Totally overwrite your old setup.
 --download                ...
 
 

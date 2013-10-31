@@ -44,17 +44,16 @@ usage() {
 --first-run               Build databases and prepare client system.
 --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
+--clobber                 Totally overwrite your old setup.
+--install                 Create executable links at $HOME/bin.
+--set-host-directory      Use a different directory for db's and program files.
+                          (default is $HOME/.vmsuite)
+--set-install-directory   Use a different directory for executable links.
+                          (default is $HOME/bin)
 --update                  Update virtualbox.
 "
 	exit $STATUS
 }
-
-
-# create_databases_and_tables 
-# 	Create or recreate $PROGRAM's internal database.	
-create_databases_and_tables () {
-}
-
 
 
 # Die if no options received.
@@ -69,13 +68,21 @@ do
 		--first-run)
 		FIRST_RUN=true
 		;;
+		--clobber)
+		CLOBBER=true
+		;;
 		--rebuild)
 		REBUILD=true
 		;;
 		--install)
 		INSTALL=true
 		;;
+		--uninstall)
+		UNINSTALL=true
+		;;
 		--at|--set-install-directory)
+		INSTALL=true
+		SET_INSTALL_DIR=true
 		shift
 		INSTALL_DIRECTORY=$1
 		;;
@@ -83,7 +90,7 @@ do
 		SKIP_SERVER=true
 		;;
 		-v|--verbose)
-		usage 0
+		VERBOSE=true
 		;;
 		-h|--help)
 		usage 0
@@ -96,29 +103,42 @@ do
 shift
 done
 
+# Set verbosity and other flags.
+eval_flags
 
 # Do the first run.
 if [ ! -z $FIRST_RUN ]
 then
   # Set directory.
-  [ ! -z "$HOST_DIRECTORY" ] && DIR="$HOST_DIRECTORY" 
+  [ ! -z "$HOST_DIRECTORY" ] && HOST_DIR="$HOST_DIRECTORY" 
 
   # Do filesystem purtyness.
-  mkdir $MKDIR_FLAGS $DIR/{img,file,vbox,keys}
-  mkdir $MKDIR_FLAGS $DIR/vbox/{src,bin}
+  mkdir $MKDIR_FLAGS $HOST_DIR/{img,file,vbox,keys}
+  mkdir $MKDIR_FLAGS $HOST_DIR/vbox/{src,bin}
 
 	# Create the database tables.
   # Useful to break up single files..
 	# cat vm.sql | grep CREATE | sed 's/CREATE TABLE //' | sed 's/ (//'
   if [ ! -f $DB ] 
   then
-		declare -a TABLES 
-		TABLES=( $( ls $BIN_SQL_DIR ) )
-		for __SQL__  in ${TABLES[@]}
-		do 
-			[ ! -z $VERBOSE ] && echo "Creating table: ${SSQL_FILE%%.sql}"
-			[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
-		done
+		# Get rid of the old.
+		[ ! -z $CLOBBER ] && rm $RM_FLAGS $DB
+
+		# Create tables.	
+#		declare -a TABLES 
+#		TABLES=( $( ls $BIN_SQL_DIR ) )
+#		for __SQL__  in ${TABLES[@]}
+#		do 
+#			[ ! -z $VERBOSE ] && echo "Creating table: ${SSQL_FILE%%.sql}"
+#			[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
+#		done
+
+		#	[ ! -z $VERBOSE ] && echo "Creating table: ${SSQL_FILE%%.sql}"
+
+		# Create tables (alternate method)
+		__SQL__="$BIN_SQL_DIR/vm.sql"
+		[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
+		echo $__SQLITE $DB < $__SQL__
 	fi
 
 	# Set up some server for syncing your vms to.
@@ -134,19 +154,48 @@ fi
 if [ ! -z $INSTALL ]
 then
 	# Create folder.
-	[ ! -d "$INSTALL_DIRECTORY" ] && mkdir $MKDIR_FLAGS $INSTALL_DIRECTORY
+	if [ ! -z "$INSTALL_DIRECTORY" ] && [ ! -d "$INSTALL_DIRECTORY" ] 
+	then
+		mkdir $MKDIR_FLAGS $INSTALL_DIRECTORY
+		HOST_INSTALL_DIRECTORY="$INSTALL_DIRECTORY"
+	fi
 
 	# Link
 	SUITE_LIST=( $(ls $BINDIR/*.sh) )
 	for PFILE in ${SUITE_LIST[@]}
 	do
-		echo ln $LNFLAGS "${PFILE}" "${INSTALL_DIR}/$(basename ${PFILE%%.sh})"
+		echo ln $LNFLAGS "${PFILE}" "${HOST_INSTALL_DIRECTORY}/$(basename ${PFILE%%.sh})"
 	done
 
 	# Write a record of these for later removal.
+	$__SQLITE $DB "INSERT INTO settings VALUES (
+		null,
+		'$HOST_DIR',
+		'$HOST_INSTALL_DIRECTORY',
+		'$(date)',
+		'local',
+		'',
+		'',
+		'${USER}'
+	);"	
 fi
 
 
+# Remove install files.
+if [ ! -z $UNINSTALL ]
+then
+	echo $HOST_INSTALL_DIRECTORY
+	USER_INSTALL_DIR="$( $__SQLITE $DB "SELECT install_dir FROM settings WHERE user_owner = '${USER}';" )"
+
+	# ... 
+	SUITE_LIST=( $(ls $BINDIR/*.sh) )
+	for PFILE in ${SUITE_LIST[@]}
+	do
+		echo rm $RM_FLAGS "${USER_INSTALL_DIR}/$(basename ${PFILE%%.sh})"
+	done
+
+
+fi
 
 # Rebuild the databases.
 if [ ! -z $REBUILD ]
