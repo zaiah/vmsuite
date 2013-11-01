@@ -51,6 +51,8 @@ usage() {
 --set-install-directory   Use a different directory for executable links.
                           (default is $HOME/bin)
 --update                  Update virtualbox.
+--verbose                 Be verbose in output.
+--help                    Show help.
 "
 	exit $STATUS
 }
@@ -184,7 +186,7 @@ then
 	SUITE_LIST=( $(ls $BINDIR/*.sh) )
 	for PFILE in ${SUITE_LIST[@]}
 	do
-		echo ln $LNFLAGS "${PFILE}" "${HOST_INSTALL_DIRECTORY}/$(basename ${PFILE%%.sh})"
+		ln $LN_FLAGS "${PFILE}" "${HOST_INSTALL_DIRECTORY}/$(basename ${PFILE%%.sh})"
 	done
 
 	# Write a record of these for later removal.
@@ -204,18 +206,20 @@ fi
 # Remove install files.
 if [ ! -z $UNINSTALL ]
 then
-	echo $HOST_INSTALL_DIRECTORY
+	# message
+	[ ! -z $VERBOSE ] && echo "Removing links from: $HOST_INSTALL_DIRECTORY"
+
+	# Get user's install direcotry.
 	USER_INSTALL_DIR="$( $__SQLITE $DB "SELECT install_dir FROM settings WHERE user_owner = '${USER}';" )"
 
 	# ... 
 	SUITE_LIST=( $(ls $BINDIR/*.sh) )
 	for PFILE in ${SUITE_LIST[@]}
 	do
-		echo rm $RM_FLAGS "${USER_INSTALL_DIR}/$(basename ${PFILE%%.sh})"
+		rm $RM_FLAGS "${USER_INSTALL_DIR}/$(basename ${PFILE%%.sh})"
 	done
-
-
 fi
+
 
 # Rebuild the databases.
 if [ ! -z $REBUILD ]
@@ -232,9 +236,11 @@ then
 	for SSQL_TABLE in ${SSQL_TABLES[@]}
 	do
 		# First, see if there are even records to convert.
-		SQL_RECORD_DUMP=$( $__SQLITE $DB "SELECT * FROM ${SSQL_TABLE} LIMIT 1" ) 
+		SQL_RECORD_DUMP=$( $__SQLITE $DB "SELECT id FROM ${SSQL_TABLE} LIMIT 1" ) 
 
 		# Die if not.
+#		echo $( $__SQLITE $DB "SELECT * FROM ${SSQL_TABLE} LIMIT 1" )
+#exit
 		if [ -z $SQL_RECORD_DUMP ] 
 		then
 			printf "Nothing to convert from table: $SSQL_TABLE.\n"
@@ -243,69 +249,68 @@ then
 		# Move forward if so.		
 		else
 			printf "\nTransferring old data from table: $SSQL_TABLE.\n"
-		fi
 
-		# Will need to use a temporary file to do this because of the way
-		# transactions work.
-		TMP="/tmp"
-		TMPFILE=$TMP/__${PROGRAM}.sql
-		SQL_LOADFILE="$BINDIR/sql/${SSQL_TABLE}.sql"
-		[ -e $TMPFILE ] && rm $TMPFILE
-		touch $TMPFILE
+			# Will need to use a temporary file to do this because of the way
+			# transactions work.
+			TMP="/tmp"
+			TMPFILE=$TMP/__${PROGRAM}.sql
+			SQL_LOADFILE="$BIN_SQL_DIR/${SSQL_TABLE}.sql"
+			[ -e $TMPFILE ] && rm $TMPFILE
+			touch $TMPFILE
 
-		# I need the headers from my old tables.
-		# printf "BEGIN TRANSACTION;" > $TMPFILE
-		printf ".headers ON\nSELECT * FROM ${SSQL_TABLE};\n" >> $TMPFILE
-		SSQL_HEADERS=$($__SQLITE $DB < $TMPFILE | head -n 1 | sed 's/id|//' | tr '|' ',')
-		#echo $SSQL_HEADERS
+			# I need the headers from my old tables.
+			# printf "BEGIN TRANSACTION;" > $TMPFILE
+			printf ".headers ON\nSELECT * FROM ${SSQL_TABLE};\n" >> $TMPFILE
+			SSQL_HEADERS=$($__SQLITE $DB < $TMPFILE | head -n 1 | sed 's/id|//' | tr '|' ',')
+			#echo $SSQL_HEADERS
 
-		# Remove this file.
-		[ -e $TMPFILE ] && rm $TMPFILE
+			# Remove this file.
+			[ -e $TMPFILE ] && rm $TMPFILE
 
-		# Add temporary. 
-		printf "CREATE TEMP TABLE 
-		tmp_${SSQL_TABLE}( $SSQL_HEADERS );\n" >> $TMPFILE 
+			# Add temporary. 
+			printf "CREATE TEMP TABLE 
+			tmp_${SSQL_TABLE}( $SSQL_HEADERS );\n" >> $TMPFILE 
 
-#		echo "CREATE TEMP TABLE tmp_${SSQL_TABLE}( $SSQL_HEADERS );"
+#			echo "CREATE TEMP TABLE tmp_${SSQL_TABLE}( $SSQL_HEADERS );"
 	
-		# Load everything that's currently loaded.	
-		printf "INSERT INTO tmp_${SSQL_TABLE} ( 
-		$SSQL_HEADERS ) SELECT $SSQL_HEADERS FROM $SSQL_TABLE;\n" >> $TMPFILE 
+			# Load everything that's currently loaded.	
+			printf "INSERT INTO tmp_${SSQL_TABLE} ( 
+			$SSQL_HEADERS ) SELECT $SSQL_HEADERS FROM $SSQL_TABLE;\n" >> $TMPFILE 
 
 #		echo "INSERT INTO tmp_${SSQL_TABLE} ( $SSQL_HEADERS ) SELECT $SSQL_HEADERS FROM $SSQL_TABLE;" 
 
-		# Use the option to bail if something went wrong...
-		# (Such as if we dropped a column...)
+			# Use the option to bail if something went wrong...
+			# (Such as if we dropped a column...)
 
-		# Drop the old table.
-		printf "DROP TABLE ${SSQL_TABLE};\n" >> $TMPFILE
+			# Drop the old table.
+			printf "DROP TABLE ${SSQL_TABLE};\n" >> $TMPFILE
 
-		# Load the new tables here.
-		if [ -e "$SQL_LOADFILE" ]
-		then
-			printf ".read ${SQL_LOADFILE}\n" >> $TMPFILE
-		else
-			printf "This version of the cli needs to be updated."
-			printf "kirk is missing crucial files to recreate its databases."
-			exit 1
-		fi	
+			# Load the new tables here.
+			if [ -e "$SQL_LOADFILE" ]
+			then
+				printf ".read ${SQL_LOADFILE}\n" >> $TMPFILE
+			else
+				printf "This version of the cli needs to be updated.\n"
+				exit 1
+			fi	
 	
-		# Insert the old records.
-		printf "INSERT INTO ${SSQL_TABLE} ( 
-		$SSQL_HEADERS ) SELECT $SSQL_HEADERS FROM tmp_${SSQL_TABLE};\n" >> $TMPFILE 
+			# Insert the old records.
+			printf "INSERT INTO ${SSQL_TABLE} ( 
+			$SSQL_HEADERS ) SELECT $SSQL_HEADERS FROM tmp_${SSQL_TABLE};\n" >> $TMPFILE 
 	
-		# Debug	
-		printf "SELECT * FROM ${SSQL_TABLE} ORDER BY id DESC LIMIT 1;\n" >> $TMPFILE 
+			# Debug	
+			printf "SELECT * FROM ${SSQL_TABLE} ORDER BY id DESC LIMIT 1;\n" >> $TMPFILE 
 
-		# Run
-		RECORDS_AFF=$($__SQLITE $DB < $TMPFILE | tail -n 1 | awk -F '|' '{print $1}')
-		printf "$RECORDS_AFF records modified and converted in table: ${SSQL_TABLE}.\n\n"
+			# Run
+			RECORDS_AFF=$($__SQLITE $DB < $TMPFILE | tail -n 1 | awk -F '|' '{print $1}')
+			printf "$RECORDS_AFF records modified and converted in table: ${SSQL_TABLE}.\n"
+		fi
 	done
 
 	# Load anything new. 
 	declare -a SQL_MAKE
-	SQL_MAKE=( $(ls $BINDIR/files/sql) )
-	SQL_FILEPATH=$BINDIR/files/sql
+	SQL_MAKE=( $(ls $BIN_SQL_DIR ) )
+	SQL_FILEPATH=$BIN_SQL_DIR
 
 	for SSQL_FILE in ${SQL_MAKE[@]}
 	do

@@ -89,7 +89,7 @@ eval_flags() {
 if [ ! -z $VERBOSE ]
 then
 	MV_FLAGS="-v"
-	LN_FLAGS="-v"
+	LN_FLAGS="-sv"
 	MKDIR_FLAGS="-pv"
 	GZCREATE_FLAGS="czvf"
 	BZ2CREATE_FLAGS="cjvf"
@@ -99,7 +99,7 @@ then
 	RM_FLAGS="-rfv"
 else
 	MV_FLAGS=
-	LN_FLAGS=
+	LN_FLAGS="-s"
 	MKDIR_FLAGS="-p"
 	GZCREATE_FLAGS="czf"
 	BZ2CREATE_FLAGS="cjf"
