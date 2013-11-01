@@ -41,9 +41,9 @@ usage() {
 -f | --fs-size <N in mb>  Define the size of the node's filesystem.
 -i | --image <img>        Build from specified image.
 -m | --ram <N in mb>      Create a new node with specified name.
--n | --new <VM_NAME>       Create a new node with specified name.
+-n | --new <VM_NAME>      Create a new node with specified name.
 -s | --ssh-key <key>      Import an SSH key for use with the node.
--r | --remove <VM_NAME>    Get rid of a particular VM.
+-r | --remove <VM_NAME>   Get rid of a particular VM.
 
 -u | --username <name>    Create a user for the node with specified username.
 --from-disk               Use the files from the CD versus an iso file.
@@ -211,12 +211,12 @@ do
 		# Define an IP address.
 		-a | --ip-address)
 			shift
-			ipaddress="$1"
+			IPADDR="$1"
 			;;			
 
 		# Do some cloning magic.
 		-c | --clone)
-			action="clone"
+			DO_CLONE=true
 			shift
 			CLONE_NAME="$1"
 			;;			

@@ -30,8 +30,10 @@ Use `echo` before every command to see what would happen.
 - _remove_item_by_id() - Retrieve a vm by ID.  Don't repeat anywhere.
 
 
-## vmgo
 
+
+## vmgo
+COMPLETED
 Install this mess..
 	*setup some server somewhere to sync vm'=s... 
 
@@ -103,10 +105,24 @@ Build a guest containing some image.
 -r | --remove <VM_NAME>    Get rid of a particular VM.
 
 -u | --username <name>    Create a user for the node with specified username.
---from-disk               Use the files from the CD versus an iso file.
+--from-disk               Use the files from CD drive versus an iso file.
 -h | --help               Display a short help and exit. 
 -p | --use-rdp
 
+		-a | --ip-address)
+		-c | --clone)
+		-d | --domain)
+		-i | --image)
+		-f | --fs-size)
+		-m | --ram)
+		--from-disk)			
+		-u | --username)
+		-s | --ssh-key)
+		-n | --new)
+		-r | --remove)
+		-t | --from-this-vm)
+		-g | --regenerate)
+		-h | --help) 
 
 ## vmmgr (rename to vmsingle and vmmulti?)
 

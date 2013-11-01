@@ -17,13 +17,24 @@ JOIN="="
 usage() {
 	STATUS=${1:-0}
 	echo "
-./$PROGRAM 
+./$PROGRAM [ - ]
 
+General options:
 -f | --from <list>      Supply a list of options to create flags for.
--c | --license <type>   Add a particular license at the top of the script.
--o | --options          Generate a list of options.
+-g | --generate         Generate a new manifest file.
+-c | --clobber          Overwrite file if one exists.
+
+Shell Script tuning:
+-a | --according-to     Bla...
+-d | --die-on-no-arg    Make changes on <file>.
+-e | --license <type>   Add a particular license at the top of the script.
 -l | --logic            Generate accompanying logic.
+-n | --name <name>      Set up a script name.
+-o | --options          Generate a list of options.
 -t | --to <file>        Make changes on <file>.
+-u | --usage <file>     Make changes on <file>.
+
+General Options:
 -v | --verbose          Be verbose in output.
 -h | --help             Show help and quit.
 "
@@ -52,30 +63,30 @@ do
 			shift
 			FROM=$1
 		;;
+
+		-g|--generate)
+			GENERATE=true
+		;;
+
+		-c|--clobber)
+			CLOBBER=true
+		;;
+
 		-a|--according-to)
 			shift
 			ACC_FILE=$1
 		;;
-		-g|--generate)
-			GENERATE=true
+
+		-d|--die-on-no-arg)
+			DO_DIENARG=true
 		;;
-		-c|--clobber)
-			CLOBBER=true
-		;;
+
 		-e|--license)
 			SELECT_LICENSE=true
 			shift
 			LICENSE=$1
 		;;
-		-u|--usage)
-			SHOW_USAGE=true
-		;;
-		-d|--die-on-no-arg)
-			DO_DIENARG=true
-		;;
-		-o|--options)
-			DO_OPTIONS=true
-		;;
+
 		-l|--logic)
 			DO_LOGIC=true
 		;;
@@ -85,14 +96,23 @@ do
 			shift
 			FILENAME=$1
 		;;
+
 		-n|--name)
 			shift
 			NAME_OF_SCRIPT=$1
 		;;
 
+		-o|--options)
+			DO_OPTIONS=true
+		;;
+
 		-t|--to)
 			shift
 			FILENAME=$1
+		;;
+
+		-u|--usage)
+			SHOW_USAGE=true
 		;;
 
 		-v|--verbose)
@@ -189,7 +209,7 @@ unset COUNTER
 
 
 # Move forward with setting flags.
-ARG_FLAG_SET=( $(echo ${OPTS_FROM_LIST[@]} | tr [a-z] [A-Z]) )
+ARG_FLAG_SET=( $(echo ${OPTS_FROM_LIST[@]} | tr [a-z] [A-Z] | tr '-' '_') )
 COUNTER=0
 LIM=$(( ${#OPTS_FROM_LIST[@]} - 1 ))
 
