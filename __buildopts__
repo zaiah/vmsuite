@@ -118,6 +118,7 @@ do
 		-v|--verbose)
 		usage 0
 		;;
+
 		-h|--help)
 		usage 0
 		;;
@@ -217,11 +218,12 @@ LIM=$(( ${#OPTS_FROM_LIST[@]} - 1 ))
 # Show a usage message.
 if [ ! -z $SHOW_USAGE ]
 then
+	# Eventually add option for top tags.
 	( printf '\n# usage message\n'
 	printf '# Show a usage message and die.\n'
 	printf 'usage() {\n'
 	printf '   STATUS="${1:-0}"\n'
-	printf '   echo "Usage: ./${PROGRAM}\n' ) >> $FILENAME
+	printf '   echo "Usage: ./${PROGRAM}\n\t[ -  ]\n\n' ) >> $FILENAME
 
 	# Logic
 	for OPTCOUNT in `seq $COUNTER $LIM`
@@ -245,8 +247,10 @@ then
 		fi
 	done
 
-
-	( printf '\n"'
+	printf -- '-v|--verbose                 ' | head -c 20 >> $FILENAME 
+	printf 'Be verbose in output.\n' >> $FILENAME
+	printf -- '-h|--help                    ' | head -c 20 >> $FILENAME
+	( printf 'Show this help and quit.\n"\n' 
 	printf '   exit $STATUS\n'
 	printf '}\n\n' ) >> $FILENAME
 fi
@@ -309,8 +313,10 @@ then
 
 
 	# End the arguments.
-	( printf '      -*)\n   ' 
-	printf '   printf \"Bad argument.\\n\";\n      exit 1\n   ;;\n'
+ ( printf '      -v|--verbose)\n        VERBOSE=true\n      ;;\n' 
+   printf '      -h|--help)\n        usage 0\n      ;;\n' 
+ 	printf '      -*)\n   ' 
+	printf '   printf \"Bad argument.\\n\";\n      exit 1\n     ;;\n'
 	printf '      *) break;;\n'
 	printf '   esac\nshift\n'	
 	printf 'done\n' ) >> $FILENAME

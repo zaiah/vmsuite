@@ -109,20 +109,6 @@ Build a guest containing some image.
 -h | --help               Display a short help and exit. 
 -p | --use-rdp
 
-		-a | --ip-address)
-		-c | --clone)
-		-d | --domain)
-		-i | --image)
-		-f | --fs-size)
-		-m | --ram)
-		--from-disk)			
-		-u | --username)
-		-s | --ssh-key)
-		-n | --new)
-		-r | --remove)
-		-t | --from-this-vm)
-		-g | --regenerate)
-		-h | --help) 
 
 ## vmmgr (rename to vmsingle and vmmulti?)
 
