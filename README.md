@@ -86,7 +86,7 @@ Mess with the default guest image details.
 -f | --fs-size <N in mb>  Define the size of the node's filesystem.
 -i | --image <img>        Build from specified image.
 -m | --ram <N in mb>      Create a new node with specified name.
--n | --new <VM_NAME>       Create a new node with specified name.
+-n | --new <VM_NAME>      Create a new node with specified name.
 -s | --ssh-key <key>      Import an SSH key for use with the node.
 
 
