@@ -77,6 +77,17 @@ do
 		--install)
 		INSTALL=true
 		;;
+		--prepare-sync)
+		PREPARE_SERVER=true
+		;;
+		--name)
+			shift
+			SERVER_NAME="$1"
+		;;
+		--address)
+			shift
+			SERVER_NAME="$1"
+		;;
 		--uninstall)
 		UNINSTALL=true
 		;;
@@ -140,14 +151,23 @@ then
 		[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
 		echo $__SQLITE $DB < $__SQL__
 	fi
-
-	# Set up some server for syncing your vms to.
-	if [ -z $SKIP_SERVER ]
-	then
-		echo "Syncing to server..."
-	fi
 fi 
 
+
+# Set up some server for syncing your vms to.
+if [ ! -z $PREPARE_SERVER ]
+then
+	$__SQLITE $DB "INSERT INTO sync_servers VALUES (
+		null,
+		'',
+		'',
+		'',
+		'',
+		'',
+		'',
+		''
+	);"	
+fi
 
 
 # Do the install.

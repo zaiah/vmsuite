@@ -33,8 +33,6 @@ Use `echo` before every command to see what would happen.
 ## vmgo
 
 Install this mess..
-x	mkdir -p ...
-	sqlite3 load etc stuff and junk
 	*setup some server somewhere to sync vm'=s... 
 
 Rebuild databases....
@@ -42,8 +40,8 @@ Rebuild databases....
 Update virtualbox
 
 
---first-run               Build databases and all that jazz.
---rebuild                 Rebuild databases for new versions.
+x --first-run               Build databases and all that jazz.
+x --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
 --update                  Update virtualbox.
 --clobber                 Totally overwrite your old setup.
@@ -133,6 +131,13 @@ x -h     Show this help message and quit.
 -a     Set an alias for a machine.
 
 ## vmmulti
+
+...
+
+## vmwatch 
+
+Tracks stats on different vms.  memory, disk free, any other data that you can fit in.
+
 
 ## vmsec
 
