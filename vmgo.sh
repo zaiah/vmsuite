@@ -29,10 +29,10 @@
 # THE SOFTWARE.
 #-----------------------------------------------------#
 
-LIB="vmlib.sh"
-source "$(dirname "$(readlink -f $0)")/$LIB"	# Include the library.
-PROGRAM="vmgo"                            	# Program name.
+LIB="sh/vmlib.sh"
 BINDIR="$(dirname "$(readlink -f $0)")"   	# The program's directory.
+source "$BINDIR/$LIB"	                     # Include the library.
+PROGRAM="vmgo"                            	# Program name.
 
 
 # usage message
@@ -138,20 +138,14 @@ then
 		[ ! -z $CLOBBER ] && rm $RM_FLAGS $DB
 
 		# Create tables.	
-#		declare -a TABLES 
-#		TABLES=( $( ls $BIN_SQL_DIR ) )
-#		for __SQL__  in ${TABLES[@]}
-#		do 
-#			[ ! -z $VERBOSE ] && echo "Creating table: ${SSQL_FILE%%.sql}"
-#			[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
-#		done
-
-		#	[ ! -z $VERBOSE ] && echo "Creating table: ${SSQL_FILE%%.sql}"
-
-		# Create tables (alternate method)
-		__SQL__="$BIN_SQL_DIR/vm.sql"
-		[ -e "$__SQL__" ] && $__SQLITE $DB < $__SQL__
-		echo $__SQLITE $DB < $__SQL__
+		declare -a TABLES 
+		TABLES=( $( ls $BIN_SQL_DIR ) )
+		for __SQL__  in ${TABLES[@]}
+		do 
+			__SQLFN__="${BIN_SQL_DIR}/${__SQL__}"
+			[ ! -z $VERBOSE ] && echo "Creating table: ${__SQL__%%.sql}"
+			[ -e "$__SQLFN__" ] && $__SQLITE $DB < $__SQLFN__
+		done
 	fi
 fi 
 

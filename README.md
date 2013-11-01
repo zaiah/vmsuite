@@ -43,20 +43,24 @@ Update virtualbox
 x --first-run               Build databases and all that jazz.
 x --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
---update                  Update virtualbox.
---clobber                 Totally overwrite your old setup.
---download                ...
+x --clobber                 Totally overwrite your old setup.
 
 
-## vmbackend
+
+## vmmaster
 
 Management of virtualbox itself
+--download			Download the software
+--deploy				Deploy an install somewhere (local or systemwide)
+--at					Set a different directory than the default.
+--as					Run as a different user.
+x --update        Update virtualbox.
 
 You can build for local testing by using the source code and forget root.
 http://download.virtualbox.org/virtualbox/4.3.0/VirtualBox-4.3.0.tar.bz2
 
-
 When you're really ready to build, use something else...
+
 
 
 ## vmimg

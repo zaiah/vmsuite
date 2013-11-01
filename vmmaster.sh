@@ -1,6 +1,6 @@
 #!/bin/bash -
 #------------------------------------------------------
-# vmgo.sh 
+# vmmaster.sh 
 # 
 # Deploy vmsuite for the first time.
 #
@@ -32,7 +32,7 @@
 LIB="sh/vmlib.sh"
 BINDIR="$(dirname "$(readlink -f $0)")"   	# The program's directory.
 source "$BINDIR/$LIB"	                     # Include the library.
-PROGRAM="vmgo"                            	# Program name.
+PROGRAM="vmmaster"                          	# Program name.
 
 
 # usage message
@@ -46,9 +46,7 @@ usage() {
 }
 
 
-# wget http://download.virtualbox.org/virtualbox/4.3.2/VirtualBox-4.3.2-90405-Linux_amd64.run
- 
-# Die if no op tions received.
+# Die if no options received.
 [ -z $BASH_ARGV ] && echo "Nothing to do." && usage 1
 while [ $# -gt 0 ]
 do
