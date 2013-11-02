@@ -37,8 +37,9 @@ __SQLITE="/usr/bin/sqlite3"
 HOST_DIR="$HOME/.vmsuite"
 DB="$HOST_DIR/vm.db"
 
-# Program directories.
+# Program directories and files.
 BIN_SQL_DIR="$BINDIR/sql"
+DEFAULTS="$BINDIR/sh/defaults.sh"
 
 # Host directories.
 HOST_ISO_DIR="$DIR/img"
@@ -46,6 +47,7 @@ HOST_VBOX_DIR="$DIR/vbox"
 HOST_KEY_DIR="$DIR/keys"
 HOST_FILE_DIR="$DIR/file"
 HOST_INSTALL_DIRECTORY="$HOME/bin"
+
 
 # Handle strings or numbers.
 convert_val() {
@@ -82,6 +84,11 @@ remove_by_id() {
 	DB_ID=$($__SQLITE $DB "SELECT id FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
 	echo $($__SQLITE $DB "DELETE FROM $SUPPLIED_TABLE WHERE $PARAM = '$VALUE';")
 }
+
+
+# load_parameters()
+# Load every parameter as something...
+
 
 
 # Set all flags.

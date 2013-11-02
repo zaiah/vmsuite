@@ -41,10 +41,20 @@ x vmmgr --runas single / multi
 	vmmgs.sh 
 	vmmgm.sh
 x vmimg.sh - Some pretty cool stuff can probably done w/ PXE...
- vmwatch
+  vmwatch
  	Wrappers for --metrics option
- vmnet.sh
- 	Just for router management
+  vminfo
+ 	View that aggregates a ton of information on VM's
+	uuid, dateCreated, name, network, groups it's attached to, bla...
+  vmnet.sh
+ 	Just for router/network management
+	(See all the different virtual networks created, etc)
+
+
+## vmdefaults (i never want to ever ever ever do this shit again...)
+defaults will get their own folder, and SQL can load them/reload them as necessary
+
+we'll edit the different ones from here...
 
 ## vmmaster
 
@@ -73,7 +83,7 @@ They should be stored somewhere...
 --start-pxe   Set up an image for booting over PXE.
 
 
-## vmdefault
+## vmdefault (this is silly because it can be reloaded without this much work)
 
 Mess with the default guest image details.
 
@@ -83,13 +93,15 @@ Mess with the default guest image details.
 -f | --fs-size <N in mb>  Define the size of the node's filesystem.
 -i | --image <img>        Build from specified image.
 -m | --ram <N in mb>      Create a new node with specified name.
--n | --new <VM_NAME>      Create a new node with specified name.
--s | --ssh-key <key>      Import an SSH key for use with the node.
 
 
 ## vmbuilder
 
 Build a guest containing some image.
+
+catch identifier
+catch --to argument since it will be another profile
+write lib routine to load all arguments at once
 
 -a | --ip-address <N>        Define an IP address for the new node.
 -c | --clone <name>          Define a new name for the clone.
@@ -98,13 +110,12 @@ Build a guest containing some image.
 -i | --image <img>           Build from specified image.
 -m | --ram <N in mb>         Create a new node with specified name.
 -n | --new <VM_NAME>         Create a new node with specified name.
--s | --ssh-key <key>      Import an SSH key for use with the node.
--r | --remove <VM_NAME>   Get rid of a particular VM.
-
--u | --username <name>    Create a user for the node with specified username.
---from-disk               Use the files from CD drive versus an iso file.
--h | --help               Display a short help and exit. 
--p | --use-rdp
+-r | --remove <VM_NAME>   	  Get rid of a particular VM.
+--from-disk               	  Use the files from CD drive versus an iso file.
+-o | --morph <VM_NAME>       Should totally change a VM.
+-s | --morph-and-copy <VM_NAME>  Should morph and copy/clone a VM.
+-e | --name <VM_NAME>		  Use name as identifier when morphing.
+-u | --uuid <VM_UUID>        Use uuid as identiifer when morphing.
 
 
 ## vmmgr (rename to vmsingle and vmmulti?)

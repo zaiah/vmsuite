@@ -42,6 +42,7 @@ usage() {
 	echo "Usage: ./${PROGRAM}
 
 --first-run               Build databases and prepare client system.
+--list                    List settings and whatnot.
 --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
 --clobber                 Totally overwrite your old setup.
@@ -63,6 +64,9 @@ usage() {
 while [ $# -gt 0 ]
 do
 	case "$1" in 
+		--list)
+			LIST=true
+		;;
 		--set-host-directory)
 		shift
 		HOST_DIRECTORY=$1
@@ -94,10 +98,13 @@ do
 		UNINSTALL=true
 		;;
 		--at|--set-install-directory)
-		INSTALL=true
-		SET_INSTALL_DIR=true
-		shift
-		INSTALL_DIRECTORY=$1
+			INSTALL=true
+			SET_INSTALL_DIR=true
+			shift
+			INSTALL_DIRECTORY=$1
+		;;
+		--total)
+			TOTAL=true
 		;;
 		--no-server-setup)
 		SKIP_SERVER=true
@@ -122,18 +129,18 @@ eval_flags
 # Do the first run.
 if [ ! -z $FIRST_RUN ]
 then
-  # Set directory.
-  [ ! -z "$HOST_DIRECTORY" ] && HOST_DIR="$HOST_DIRECTORY" 
+	# Set directory.
+	[ ! -z "$HOST_DIRECTORY" ] && HOST_DIR="$HOST_DIRECTORY" 
 
-  # Do filesystem purtyness.
-  mkdir $MKDIR_FLAGS $HOST_DIR/{img,file,vbox,keys}
-  mkdir $MKDIR_FLAGS $HOST_DIR/vbox/{src,bin}
+	# Do filesystem purtyness.
+	mkdir $MKDIR_FLAGS $HOST_DIR/{img,file,vbox,keys}
+	mkdir $MKDIR_FLAGS $HOST_DIR/vbox/{src,bin}
 
 	# Create the database tables.
-  # Useful to break up single files..
+	# Useful to break up single files..
 	# cat vm.sql | grep CREATE | sed 's/CREATE TABLE //' | sed 's/ (//'
-  if [ ! -f $DB ] 
-  then
+	if [ ! -f $DB ] 
+	then
 		# Get rid of the old.
 		[ ! -z $CLOBBER ] && rm $RM_FLAGS $DB
 
@@ -147,28 +154,32 @@ then
 			[ -e "$__SQLFN__" ] && $__SQLITE $DB < $__SQLFN__
 		done
 	fi
+
+	# Verbosity in case for some reason you don't want to install.
+	[ ! -z $VERBOSE ] && echo "Files created at: $HOST_DIR"
 fi 
 
 
-# Set up some server for syncing your vms to.
-if [ ! -z $PREPARE_SERVER ]
+# List all the settings and stuff.
+if [ ! -z $LIST ]
 then
-	$__SQLITE $DB "INSERT INTO sync_servers VALUES (
-		null,
-		'',
-		'',
-		'',
-		'',
-		'',
-		'',
-		''
-	);"	
+	# Show settings.
+	$__SQLITE -line $DB "SELECT * FROM settings;" 
 fi
 
 
 # Do the install.
 if [ ! -z $INSTALL ]
 then
+	# To keep it clean let's not allow multiple install dirs yet.
+	IS_INSTALLED=$($__SQLITE $DB "SELECT install_dir FROM settings WHERE user_owner = '${USER}' LIMIT 1;")
+
+	if [ ! -z "$IS_INSTALLED" ]
+	then
+		echo "Please run $PROGRAM --uninstall first."
+		echo "Program links already exist at: $IS_INSTALLED"
+	fi
+
 	# Create folder.
 	if [ ! -z "$INSTALL_DIRECTORY" ] && [ ! -d "$INSTALL_DIRECTORY" ] 
 	then
@@ -186,12 +197,13 @@ then
 	# Write a record of these for later removal.
 	$__SQLITE $DB "INSERT INTO settings VALUES (
 		null,
+		'vi',
 		'$HOST_DIR',
 		'$HOST_INSTALL_DIRECTORY',
 		'$(date)',
 		'local',
 		'',
-		'',
+		'$(date)',
 		'${USER}'
 	);"	
 fi
@@ -200,11 +212,12 @@ fi
 # Remove install files.
 if [ ! -z $UNINSTALL ]
 then
-	# message
+	# Purty message. 
 	[ ! -z $VERBOSE ] && echo "Removing links from: $HOST_INSTALL_DIRECTORY"
 
 	# Get user's install direcotry.
-	USER_INSTALL_DIR="$( $__SQLITE $DB "SELECT install_dir FROM settings WHERE user_owner = '${USER}';" )"
+	USER_INSTALL_DIR="$( $__SQLITE $DB "SELECT 
+		install_dir FROM settings WHERE user_owner = '${USER}';" )"
 
 	# ... 
 	SUITE_LIST=( $(ls $BINDIR/*.sh) )
@@ -212,6 +225,18 @@ then
 	do
 		rm $RM_FLAGS "${USER_INSTALL_DIR}/$(basename ${PFILE%%.sh})"
 	done
+
+	# Totally remove and start again later.
+	if [ ! -z $TOTAL ]
+	then
+		rm $RM_FLAGS $HOST_INSTALL_DIRECTORY
+
+	else
+		# Notice I can't reinstall if I decide to change this...
+		$__SQLITE $DB "UPDATE settings 
+		SET install_dir = '', 
+		last_mod_date = '$(date)' WHERE user_owner = '${USER}'"
+	fi
 fi
 
 

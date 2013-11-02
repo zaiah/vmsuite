@@ -1,8 +1,8 @@
 #!/bin/bash -
-#------------------------------------------------------
-# vmbuilder.sh 
+#-----------------------------------------------------#
+# vmbuilder
 #
-# Handle building of virtual machines.
+# Helps build VMs.
 #
 # ---------
 # Licensing
@@ -42,60 +42,136 @@ usage() {
    echo "Usage: ./${PROGRAM}
 	[ -  ]
 
--i|--ip-address     desc
--c|--clone          desc
--d|--domain         desc
--f|--fs-size        desc
--i|--image          desc
--r|--ram            desc
--n|--new            desc
--m|--modify         desc
--r|--remove         desc
--f|--from-disk      desc
--v|--verbose        Be verbose in output.
--h|--help           Show this help and quit.
+VM Creation Options:
+-c | --clone <arg>              desc
+-n | --new <arg>                desc
+-r | --remove <arg>             desc
+-m | --morph <arg>              desc
+-m | --morph_and_copy <arg>     desc
+--from_disk <arg>               desc
+-n | --name <arg>               desc
+-u | --uuid <arg>               desc
+-i | --image <arg>              desc
+
+VM Parameter Options: 
+-i | --ip_address <arg>         desc
+-d | --domain <arg>             desc
+-f | --fs_size <arg>            desc
+-r | --ram <arg>                desc
+
+General Options:
+--edit-defaults                 Edit the defaults that ship with vmsuite.
+-v | --verbose                  Be verbose in output.
+-h | --help                     Show this help and quit.
 "
    exit $STATUS
 }
 
 
+# pickIso()
+# Select an ISO file (b/c they can be pretty hard to spell out)
+pick_iso() {
+	# Generate a short menu of ISO files.
+	# This will be coming from the databse
+	# disk_img table
+	printf "Please select the image you like to use for your new node:\n\n"
+	declare -a avail_imgs=($(find -L "$ISO_DIR" -iname "*.iso")) 
+
+	# Show a long menu.
+	for pcount in $(seq 0 ${#avail_imgs[*]})
+	do
+		if [ $pcount == ${#avail_imgs[*]} ]
+		then
+			break
+		fi	
+		index=$(( $pcount + 1 ))
+		printf "\t${index})${avail_imgs[${pcount}]}\n"
+	done
+
+	read ans
+	n=$(( $ans - 1 ))
+
+	# Should we have any reason to mount this?
+	iso=${avail_imgs[$n]}
+}
+
+
+# Die on no arg.
 [ -z $BASH_ARGV ] && printf "Nothing to do\n" && usage 1
 while [ $# -gt 0 ]
 do
    case "$1" in
-     -i|--ip-address)
+		--edit-defaults)
+			EDIT_DEFAULTS=true
+		;;
+     -i|--ip_address)
          IP_ADDRESS=true
+         shift
+         IP_ADDRESS_ARG=$1
       ;;
      -c|--clone)
          CLONE=true
+         shift
+         CLONE_ARG=$1
       ;;
      -d|--domain)
          DOMAIN=true
+         shift
+         DOMAIN_ARG=$1
       ;;
-     -f|--fs-size)
+     -f|--fs_size)
          FS_SIZE=true
+         shift
+         FS_SIZE_ARG=$1
       ;;
      -i|--image)
          IMAGE=true
+         shift
+         IMAGE_ARG=$1
       ;;
      -r|--ram)
          RAM=true
+         shift
+         RAM_ARG=$1
       ;;
      -n|--new)
          NEW=true
-      ;;
-     -m|--modify)
-         MODIFY=true
+         shift
+         NEW_ARG=$1
       ;;
      -r|--remove)
          REMOVE=true
+         shift
+         REMOVE_ARG=$1
       ;;
-     -f|--from-disk)
+     -m|--morph)
+         MORPH=true
+         shift
+         MORPH_ARG=$1
+      ;;
+     -m|--morph_and_copy)
+         MORPH_AND_COPY=true
+         shift
+         MORPH_AND_COPY_ARG=$1
+      ;;
+     -n|--name)
+         NAME=true
+         shift
+         NAME_ARG=$1
+      ;;
+     -u|--uuid)
+         UUID=true
+         shift
+         UUID_ARG=$1
+      ;;
+     -f|--from_disk)
          FROM_DISK=true
+         shift
+         FROM_DISK_ARG=$1
       ;;
       -v|--verbose)
         VERBOSE=true
-     ;;
+      ;;
       -h|--help)
         usage 0
       ;;
@@ -108,55 +184,78 @@ do
 shift
 done
 
-# Set verbosity and other flags.
+# Set verbosity.
 eval_flags
 
-if [ ! -z $IP_ADDRESS ]
+# Edit the defaults and write them back into the database.
+if [ ! -z $EDIT_DEFAULTS ]
 then
-   echo '...'
+	# Why would this fail?
+	[ ! -f $DEFAULTS ] && echo "No defaults file!" && exit 1
+
+	# Get all the default records.
+	# Let's design something to where we don't 
+	# need to worry about columns names.
+	# $__SQLITE $DB "SELECT * FROM defaults" 
+
+	
+	# Output to a temporary file to edit.
+#RAM=$RAM
+#BALLOON=$BALLOON
+#FS_SIZE=$FS_SIZE
+#OS_TYPE=$OS_TYPE
+#NIC_COUNT=$NIC_COUNT
+#NIC_1=$NIC_1
+#NIC_2=$NIC_2
+
+#echo $RAM
+#echo $BALLOON
+#echo $FS_SIZE
+#echo $OS_TYPE
+#echo $NIC_COUNT
+#echo $NIC_1
+#echo $NIC_2
+
+	# Load the new changes.
+	source $DEFAULTS
+	$__SQLITE $DB "INSERT INTO defaults VALUES (
+		null,
+		$RAM,
+		$FS_SIZE,
+		'$OS_TYPE',
+		'$NIC_PROF'
+	);"
 fi
 
-if [ ! -z $CLONE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $DOMAIN ]
-then
-   echo '...'
-fi
-
-if [ ! -z $FS_SIZE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $IMAGE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $RAM ]
-then
-   echo '...'
-fi
-
+# Create a totally new VM.
 if [ ! -z $NEW ]
 then
-   echo '...'
+	echo "..."
 fi
 
-if [ ! -z $MODIFY ]
-then
-   echo '...'
-fi
-
+# Remove a VM.
 if [ ! -z $REMOVE ]
 then
-   echo '...'
+	echo "..."
 fi
 
-if [ ! -z $FROM_DISK ]
+# Clone a single VM. 
+if [ ! -z $CLONE ]
 then
-   echo '...'
+	echo "..."
 fi
+
+
+# Permanently modify a VM.
+if [ ! -z $MORPH ]
+then
+	echo "..."
+fi
+
+
+# Modify and make a new copy of a VM.
+if [ ! -z $MORPH_AND_COPY ]
+then
+	echo "..."
+fi
+
