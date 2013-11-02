@@ -1,8 +1,9 @@
 #!/bin/bash -
+#-----------------------------------------------------#
+# vmdefault.sh
 #
-# 
-
-
+# Murderous demon basket case... 
+#
 # ---------
 # Licensing
 # ---------
@@ -26,6 +27,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#-----------------------------------------------------#
+
+LIB="sh/vmlib.sh"
+BINDIR="$(dirname "$(readlink -f $0)")"   	# The program's directory.
+source "$BINDIR/$LIB"	                     # Include the library.
+PROGRAM="vmdefault"                        	# Program name.
 
 # usage message
 # Show a usage message and die.
@@ -84,32 +91,6 @@ do
 shift
 done
 
-if [ ! -z $IP_ADDRESS ]
-then
-   echo '...'
-fi
-
-if [ ! -z $CLONE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $DOMAIN ]
-then
-   echo '...'
-fi
-
-if [ ! -z $FS_SIZE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $IMAGE ]
-then
-   echo '...'
-fi
-
-if [ ! -z $RAM ]
-then
-   echo '...'
-fi
+# Should just need one function to set whatever comes through.
+# Set verbosity and other flags.
+eval_flags

@@ -1,9 +1,9 @@
 #!/bin/bash -
-#------------------------------------------------------
-# vmmaster.sh 
+#-----------------------------------------------------#
+# vmmaster.sh
 # 
-# Deploy vmsuite for the first time.
-#
+# Manage the virtualbox installation on machine.
+# 
 # ---------
 # Licensing
 # ---------
@@ -38,35 +38,88 @@ PROGRAM="vmmaster"                          	# Program name.
 # usage message
 # Show a usage message and die.
 usage() {
-	STATUS="${1:-0}"
-	echo "Usage: ./${PROGRAM}
-	
+   STATUS="${1:-0}"
+   echo "Usage: ./${PROGRAM}
+	[ -  ]
+
+-d|--download       desc
+-d|--deploy <arg>   desc
+-a|--at <arg>       desc
+-a|--as <arg>       desc
+-u|--update         desc
+-v|--verbose        Be verbose in output.
+-h|--help           Show this help and quit.
 "
-	exit $STATUS
+   exit $STATUS
 }
 
 
-# Die if no options received.
-[ -z $BASH_ARGV ] && echo "Nothing to do." && usage 1
+[ -z $BASH_ARGV ] && printf "Nothing to do\n" && usage 1
 while [ $# -gt 0 ]
 do
-	case "$1" in 
-		# OPTS
-		-v|--verbose)
-		usage 0
-		;;
-		-h|--help)
-		usage 0
-		;;
-		-*)
-		;;
-		*)
-		;;
-	esac
+   case "$1" in
+     -d|--download)
+         DOWNLOAD=true
+      ;;
+     -d|--deploy)
+         DEPLOY=true
+         shift
+         DEPLOY_ARG=$1
+      ;;
+     -a|--at)
+         AT=true
+         shift
+         AT_ARG=$1
+      ;;
+     -a|--as)
+         AS=true
+         shift
+         AS_ARG=$1
+      ;;
+     -u|--update)
+         UPDATE=true
+      ;;
+      -v|--verbose)
+        VERBOSE=true
+      ;;
+      -h|--help)
+        usage 0
+      ;;
+      -*)
+      printf "Bad argument.\n";
+      exit 1
+     ;;
+      *) break;;
+   esac
 shift
 done
 
 
-# Set flags based on verbosity.
+# Set verbosity and other flags.
 eval_flags
 
+
+if [ ! -z $DOWNLOAD ]
+then
+   echo '...'
+fi
+
+if [ ! -z $DEPLOY ]
+then
+   echo '...'
+fi
+
+if [ ! -z $AT ]
+then
+   echo '...'
+fi
+
+if [ ! -z $AS ]
+then
+   echo '...'
+fi
+
+if [ ! -z $UPDATE ]
+then
+   echo '...'
+fi

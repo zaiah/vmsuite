@@ -1,8 +1,8 @@
 #!/bin/bash -
 #------------------------------------------------------
-# vmgo.sh 
+# vmimg.sh
 # 
-# Deploy vmsuite for the first time.
+# Handle VM images.
 #
 # ---------
 # Licensing
@@ -27,48 +27,89 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#-----------------------------------------------------#
+#------------------------------------------------------
+
 
 LIB="sh/vmlib.sh"
 BINDIR="$(dirname "$(readlink -f $0)")"   	# The program's directory.
 source "$BINDIR/$LIB"	                     # Include the library.
-PROGRAM="vmgo"                            	# Program name.
+PROGRAM="vmbuilder"                         	# Program name.
 
 
 # usage message
 # Show a usage message and die.
 usage() {
-	STATUS="${1:-0}"
-	echo "Usage: ./${PROGRAM}
-	
+   STATUS="${1:-0}"
+   echo "Usage: ./${PROGRAM}
+	[ -  ]
+
+-r|--refresh           desc
+-d|--download <arg>    desc
+-a|--alias <arg>       desc
+-s|--start-pxe <arg>   desc
+-v|--verbose           Be verbose in output.
+-h|--help              Show this help and quit.
 "
-	exit $STATUS
+   exit $STATUS
 }
 
 
-# wget http://download.virtualbox.org/virtualbox/4.3.2/VirtualBox-4.3.2-90405-Linux_amd64.run
- 
-# Die if no op tions received.
-[ -z $BASH_ARGV ] && echo "Nothing to do." && usage 1
+[ -z $BASH_ARGV ] && printf "Nothing to do\n" && usage 1
 while [ $# -gt 0 ]
 do
-	case "$1" in 
-		# OPTS
-		-v|--verbose)
-		usage 0
-		;;
-		-h|--help)
-		usage 0
-		;;
-		-*)
-		;;
-		*)
-		;;
-	esac
+   case "$1" in
+     -r|--refresh)
+         REFRESH=true
+      ;;
+     -d|--download)
+         DOWNLOAD=true
+			shift
+			DOWNLOAD_ARG=$1
+      ;;
+     -a|--alias)
+         ALIAS=true
+			shift
+			ALIAS_ARG=$1
+      ;;
+     -s|--start-pxe)
+         START_PXE=true
+			shift
+			START_PXE_ARG=$1
+      ;;
+      -v|--verbose)
+        VERBOSE=true
+      ;;
+      -h|--help)
+        usage 0
+      ;;
+      -*)
+      printf "Bad argument.\n";
+      exit 1
+     ;;
+      *) break;;
+   esac
 shift
 done
 
-
-# Set flags based on verbosity.
+# Set verbosity and other flags.
 eval_flags
 
+if [ ! -z $REFRESH ]
+then
+   echo '...'
+fi
+
+if [ ! -z $DOWNLOAD ]
+then
+   echo '...'
+fi
+
+if [ ! -z $ALIAS ]
+then
+   echo '...'
+fi
+
+if [ ! -z $START_PXE ]
+then
+   echo '...'
+fi

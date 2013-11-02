@@ -31,23 +31,20 @@ Use `echo` before every command to see what would happen.
 
 
 
-
-## vmgo
-COMPLETED
-Install this mess..
-	*setup some server somewhere to sync vm'=s... 
-
-Rebuild databases....
-
-Update virtualbox
-
-
-x --first-run               Build databases and all that jazz.
-x --rebuild                 Rebuild databases for new versions.
---no-server-setup         Skip the whole server setup step.
-x --clobber                 Totally overwrite your old setup.
-
-
+vmsuite.sh (a lil something to jog your memory...)
+x vmbuilder.sh
+x vmdefault.sh
+Rx vmgo.sh
+x vmmaster.sh
+x vmmgr --runas single / multi
+(be sure to include called filename evaluation to tell which stream of logic to invoke)
+	vmmgs.sh 
+	vmmgm.sh
+x vmimg.sh - Some pretty cool stuff can probably done w/ PXE...
+ vmwatch
+ 	Wrappers for --metrics option
+ vmnet.sh
+ 	Just for router management
 
 ## vmmaster
 
@@ -70,10 +67,10 @@ When you're really ready to build, use something else...
 Images are a continual problem.  Whether I set them up or not...
 They should be stored somewhere...
 
---refresh  Get the newest list of images.
---download Download said images.
---alias    Set names for images.
-
+--refresh     Get the newest list of images.
+--download    Download said images.
+--alias       Set names for images.
+--start-pxe   Set up an image for booting over PXE.
 
 
 ## vmdefault
@@ -94,15 +91,15 @@ Mess with the default guest image details.
 
 Build a guest containing some image.
 
--a | --ip-address <N>     Define an IP address for the new node.
--c | --clone <name>       Define a new name for the clone.
--d | --domain <domain>    Define an actual domain name for the new node.
--f | --fs-size <N in mb>  Define the size of the node's filesystem.
--i | --image <img>        Build from specified image.
--m | --ram <N in mb>      Create a new node with specified name.
--n | --new <VM_NAME>       Create a new node with specified name.
+-a | --ip-address <N>        Define an IP address for the new node.
+-c | --clone <name>          Define a new name for the clone.
+-d | --domain <domain>       Define an actual domain name for the new node.
+-f | --fs-size <N in mb>     Define the size of the node's filesystem.
+-i | --image <img>           Build from specified image.
+-m | --ram <N in mb>         Create a new node with specified name.
+-n | --new <VM_NAME>         Create a new node with specified name.
 -s | --ssh-key <key>      Import an SSH key for use with the node.
--r | --remove <VM_NAME>    Get rid of a particular VM.
+-r | --remove <VM_NAME>   Get rid of a particular VM.
 
 -u | --username <name>    Create a user for the node with specified username.
 --from-disk               Use the files from CD drive versus an iso file.
@@ -112,8 +109,8 @@ Build a guest containing some image.
 
 ## vmmgr (rename to vmsingle and vmmulti?)
 
-*vmmulti can start profiles
-*vmsingle can start single vm imgs
+*vmmulti can start profiles*
+*vmsingle can start single vm imgs*
 
 Start, stop, rotate, flip around, make sing and dance different VM's.
 
@@ -138,25 +135,12 @@ x -h     Show this help message and quit.
 
 ## vmmulti
 
-...
+This is tough, b/c I think I need to copy nodes somehow, so that they can run.
+
 
 ## vmwatch 
 
 Tracks stats on different vms.  memory, disk free, any other data that you can fit in.
-
-
-## vmsec
-
-Manage security of VM's through SSH keys.
-Keep user credentials somewhere.
-This tool should be able to output lots of text in order to work with other tools. 
-
-### Local Functions
-
-generate_ssh_key() - Generates an SSH key
-revoke_and_regenerate() - Revoke an SSH key and regenerate
-check_user_against - Use a randomly generated username as the current user.
-
 
 
 ## vmnet

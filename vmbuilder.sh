@@ -1,8 +1,9 @@
 #!/bin/bash -
+#------------------------------------------------------
+# vmbuilder.sh 
 #
-# 
-
-
+# Handle building of virtual machines.
+#
 # ---------
 # Licensing
 # ---------
@@ -26,6 +27,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#-----------------------------------------------------#
+
+LIB="sh/vmlib.sh"
+BINDIR="$(dirname "$(readlink -f $0)")"   	# The program's directory.
+source "$BINDIR/$LIB"	                     # Include the library.
+PROGRAM="vmbuilder"                         	# Program name.
+
 
 # usage message
 # Show a usage message and die.
@@ -99,6 +107,9 @@ do
    esac
 shift
 done
+
+# Set verbosity and other flags.
+eval_flags
 
 if [ ! -z $IP_ADDRESS ]
 then
