@@ -101,9 +101,6 @@ pick_iso() {
 while [ $# -gt 0 ]
 do
    case "$1" in
-		--edit-defaults)
-			EDIT_DEFAULTS=true
-		;;
      -i|--ip_address)
          IP_ADDRESS=true
          shift
@@ -187,45 +184,6 @@ done
 # Set verbosity.
 eval_flags
 
-# Edit the defaults and write them back into the database.
-if [ ! -z $EDIT_DEFAULTS ]
-then
-	# Why would this fail?
-	[ ! -f $DEFAULTS ] && echo "No defaults file!" && exit 1
-
-	# Get all the default records.
-	# Let's design something to where we don't 
-	# need to worry about columns names.
-	# $__SQLITE $DB "SELECT * FROM defaults" 
-
-	
-	# Output to a temporary file to edit.
-#RAM=$RAM
-#BALLOON=$BALLOON
-#FS_SIZE=$FS_SIZE
-#OS_TYPE=$OS_TYPE
-#NIC_COUNT=$NIC_COUNT
-#NIC_1=$NIC_1
-#NIC_2=$NIC_2
-
-#echo $RAM
-#echo $BALLOON
-#echo $FS_SIZE
-#echo $OS_TYPE
-#echo $NIC_COUNT
-#echo $NIC_1
-#echo $NIC_2
-
-	# Load the new changes.
-	source $DEFAULTS
-	$__SQLITE $DB "INSERT INTO defaults VALUES (
-		null,
-		$RAM,
-		$FS_SIZE,
-		'$OS_TYPE',
-		'$NIC_PROF'
-	);"
-fi
 
 # Create a totally new VM.
 if [ ! -z $NEW ]

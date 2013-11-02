@@ -42,7 +42,6 @@ usage() {
 	echo "Usage: ./${PROGRAM}
 
 --first-run               Build databases and prepare client system.
---list                    List settings and whatnot.
 --rebuild                 Rebuild databases for new versions.
 --no-server-setup         Skip the whole server setup step.
 --clobber                 Totally overwrite your old setup.
@@ -64,9 +63,6 @@ usage() {
 while [ $# -gt 0 ]
 do
 	case "$1" in 
-		--list)
-			LIST=true
-		;;
 		--set-host-directory)
 		shift
 		HOST_DIRECTORY=$1
@@ -158,14 +154,6 @@ then
 	# Verbosity in case for some reason you don't want to install.
 	[ ! -z $VERBOSE ] && echo "Files created at: $HOST_DIR"
 fi 
-
-
-# List all the settings and stuff.
-if [ ! -z $LIST ]
-then
-	# Show settings.
-	$__SQLITE -line $DB "SELECT * FROM settings;" 
-fi
 
 
 # Do the install.

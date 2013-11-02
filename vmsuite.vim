@@ -3,13 +3,14 @@ vmsuite=/home/zaiah/projects/vmsuite/vmsuite {
  LICENSE
  README.md
  vmbuilder.sh
- vmdefault.sh
+ vmdefaults.sh
  vmgo.sh
  vmimg.sh
  vmmaster.sh
  vmmgr.sh
  vmnet.sh
  vmsuite.vim
+ vmwatch.sh
  old=old {
   vmbuilder.sh
   vmdef.sh
@@ -21,9 +22,6 @@ vmsuite=/home/zaiah/projects/vmsuite/vmsuite {
   vmsec.sh
  }
  sh=sh {
-  _vm-skeleton
-  _vmdefaults
-  _vmlib
   defaults.sh
   vmlib.sh
  }
@@ -33,9 +31,8 @@ vmsuite=/home/zaiah/projects/vmsuite/vmsuite {
   prototype.sh
  }
  defaults=defaults {
-  node_defaults.sh
-  nics.sh
-  settings.sh
+  nics.sql
+  node_defaults.sql
  }
  sql=sql {
   disk_img.sql

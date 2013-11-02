@@ -37,9 +37,11 @@ __SQLITE="/usr/bin/sqlite3"
 HOST_DIR="$HOME/.vmsuite"
 DB="$HOST_DIR/vm.db"
 
+
 # Program directories and files.
 BIN_SQL_DIR="$BINDIR/sql"
-DEFAULTS="$BINDIR/sh/defaults.sh"
+BIN_DEFAULTS_DIR="$BINDIR/defaults"
+
 
 # Host directories.
 HOST_ISO_DIR="$DIR/img"
@@ -115,4 +117,11 @@ else
 	SCP_FLAGS=
 	RM_FLAGS="-rf"
 fi
+}
+
+
+# Load something from a database according to column names.
+load_from_db_columns() {
+	# Choose a table and this function should output a list of variables.
+	echo '...'
 }
