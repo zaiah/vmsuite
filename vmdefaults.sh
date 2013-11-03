@@ -120,12 +120,13 @@ then
 	source $TMP
 
 	# Choose which file to throw?
-	$__SQLITE $DB "INSERT INTO defaults VALUES (
+	$__SQLITE $DB "INSERT INTO node_defaults VALUES (
 		null,
 		$RAM,
 		$FS_SIZE,
 		'$OS_TYPE',
-		'$NIC_PROF'
+		'$NIC_PROF',
+		'${USER}'
 	);"
 fi
 
@@ -133,11 +134,14 @@ fi
 # Display all defaults.
 if [ ! -z $DISPLAY_DEFAULTS ]
 then
+	#load_from_db_columns "node_defaults"
+
 	ALL_DEFAULTS=( $(ls $BIN_DEFAULTS_DIR) )
 	for DEF_FILE in ${ALL_DEFAULTS[@]}
 	do
 		echo "${DEF_FILE%%.sql}:"
 		$__SQLITE -line $DB "SELECT * FROM ${DEF_FILE%%.sql}"
+		printf '\n'
 	done
 fi
 
