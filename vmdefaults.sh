@@ -134,9 +134,7 @@ fi
 # Display all defaults.
 if [ ! -z $DISPLAY_DEFAULTS ]
 then
-	load_from_db_columns "node_defaults"
-echo $RAM
-echo $FS_SIZE
+#	load_from_db_columns "node_defaults"
 
 	ALL_DEFAULTS=( $(ls $BIN_DEFAULTS_DIR) )
 	for DEF_FILE in ${ALL_DEFAULTS[@]}
