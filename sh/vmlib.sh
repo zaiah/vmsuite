@@ -134,8 +134,15 @@ load_from_db_columns() {
 	# Choose a table and this function should: 
 	# Get column titles and create variable names.
 	printf ".headers ON\nSELECT * FROM ${TABLE};\n" >> $TMPFILE
-	LFDB_HEADERS=( $( $__SQLITE $DB < $TMPFILE | head -n 1 | sed 's/id|//' | tr '|' ',' ) )
-	LFDB_VARS=( $( $__SQLITE $DB < $TMPFILE | head -n 1 | sed 's/id|//' | tr '|' ' ' | tr [a-z] [A-Z] ) )
+	LFDB_HEADERS=( $( $__SQLITE $DB < $TMPFILE | \
+		head -n 1 | \
+		sed 's/id|//' | \
+		tr '|' ',' ) )
+	LFDB_VARS=( $( $__SQLITE $DB < $TMPFILE | \
+		head -n 1 | \
+		sed 's/id|//' | \
+		tr '|' ' ' | \
+		tr [a-z] [A-Z] ) )
 	[ -e $TMPFILE ] && rm $TMPFILE
 
 	# Get whatever settings we've asked for.
@@ -147,7 +154,6 @@ load_from_db_columns() {
 	# This code needs to be introduced to our application somehow
 	# eval is one choice
 	# Files and source are another... (but not reliable if deleted) 
-	[ -e $TMPFILE ] && rm $TMPFILE
 	TMPFILE=$TMP/__var.sh
 	COUNTER=0
 	for XX in ${LFDB_VARS[@]}
