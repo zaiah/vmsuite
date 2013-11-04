@@ -62,15 +62,15 @@ do
 		  ;;
      -n|--nics)
 		  	EDIT=true
-         NICS=true
+         EDIT_TABLE="nics"
       ;;
      -o|--node)
 		  	EDIT=true
-         NODE=true
+         EDIT_TABLE="node_defaults"
       ;;
      -s|--settings)
 		  	EDIT=true
-         SETTINGS=true
+         EDIT_TABLE="settings"
       ;;
      --load)
          LOAD=true
@@ -100,47 +100,36 @@ if [ ! -z $EDIT ]
 then
 	# Why would this fail?
 	# [ ! -f $DEFAULTS ] && echo "No defaults file!" && exit 1
-	PRIMARY_EDITOR="$("SELECT editor FROM settings WHERE user_owner = '$USER';")"
-
+	#PRIMARY_EDITOR="$("SELECT editor FROM settings WHERE user_owner = '$USER';")"
 
 	# Evaluate what's thrown...
+	load_from_db_columns "settings"
 
-
-	# Start with a fresh temporary file.
-	TMP="/tmp/__vmdefaults__.sh"
-	[ -f "$TMP" ] && rm $RM_FLAGS $TMP
-
-	# Get payload from db, output to temporary file.
-
-	# Edit it.
-	$PRIMARY_EDITOR $TMP
-
-	# Save the changes back and check that values are of the right type.
-	[ ! -z $VERBOSE ] && echo "Reloading default nic profiles."
-	source $TMP
-
-	# Choose which file to throw?
-	$__SQLITE $DB "INSERT INTO node_defaults VALUES (
-		null,
-		$RAM,
-		$FS_SIZE,
-		'$OS_TYPE',
-		'$NIC_PROF',
-		'${USER}'
-	);"
+#	exit
+	modify_from_db_columns $EDIT_TABLE 
 fi
 
 
 # Display all defaults.
 if [ ! -z $DISPLAY_DEFAULTS ]
 then
-#	load_from_db_columns "node_defaults"
 
-	ALL_DEFAULTS=( $(ls $BIN_DEFAULTS_DIR) )
+	# Load from db, places settings into namespace
+	# Write to db, write all of our changes to DB.
+	# 	(From file)
+	# Write one or two back.
+	#  (From varlist)
+
+	# To writeback
+	# Can't use array....
+	# ...
+
+	# Geez... this is a bit silly...
+	ALL_DEFAULTS=( "nics" "node_defaults" "settings" )
 	for DEF_FILE in ${ALL_DEFAULTS[@]}
 	do
-		echo "${DEF_FILE%%.sql}:"
-		$__SQLITE -line $DB "SELECT * FROM ${DEF_FILE%%.sql}"
+		echo "$DEF_FILE:"
+		$__SQLITE -line $DB "SELECT * FROM $DEF_FILE"
 		printf '\n'
 	done
 fi
