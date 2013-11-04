@@ -208,6 +208,21 @@ fi
 if [ ! -z $MORPH ]
 then
 	echo "..."
+	
+	if [ -z "$MORPH_ARG" ]
+	then
+		echo "Need something to morph!"
+		usage 1
+	fi
+
+	# Long version:
+	# Set clause according to what's available
+	# Save to database (can be done in background)
+	# If something goes seriously wrong, you can always rollback.
+	# I guess you should save the old one too...
+	# Modify the thing
+	where "name=$MORPH_ARG"	
+	modify_from_db_columns "vm_img"
 fi
 
 

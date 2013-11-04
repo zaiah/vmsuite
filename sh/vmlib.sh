@@ -237,6 +237,33 @@ load_from_db_columns() {
 }
 
 
+#------------------------------------------------------
+# set_id() 
+# 
+# Set a WHERE id = '$1' clause when modifying.
+#-----------------------------------------------------#
+set_id() {
+	echo "..."
+}
+
+
+#------------------------------------------------------
+# set_clause() 
+# 
+# Set a certain clause when we need to modify 
+# something more advanced.
+# Should prob die if more than one record comes up.
+#-----------------------------------------------------#
+where() {
+	# Always find what you want to modify
+	# Then set what you want to modify
+
+	if [ ! -z "$1" ]
+	then
+		CLAUSE="WHERE $(echo $1 | sed "s/=/ = '/" | sed "s/$/'/" )"
+	fi
+}
+
 
 #------------------------------------------------------
 # modify_from_db_columns() {
@@ -244,8 +271,10 @@ load_from_db_columns() {
 # Write values from scripts to database.
 #-----------------------------------------------------#
 modify_from_db_columns() {
-	# Die if no table name.
+	# Catch input.
 	TABLE="$1"
+
+	# Die if no table name.
 	if [ -z "$TABLE" ]
 	then
 		echo "In function: load_from_db_columns()"
@@ -262,7 +291,14 @@ modify_from_db_columns() {
 
 		# Choose a table and this function should: 
 		# Get column titles and create variable names.
-		printf ".headers ON\nSELECT * FROM ${TABLE};\n" >> $TMPFILE
+		if [ ! -z "$CLAUSE" ]
+		then
+#			printf ".headers ON\nSELECT * FROM ${TABLE} $CLAUSE;\n" >> $TMPFILE
+			printf ".headers ON\nSELECT * FROM ${TABLE} $CLAUSE;\n" 
+		else
+			printf ".headers ON\nSELECT * FROM ${TABLE};\n" >> $TMPFILE
+		fi
+			exit
 		LFDB_HEADERS=( $( $__SQLITE $DB < $TMPFILE | \
 			head -n 1 | \
 			tr '|' ',' ) )
@@ -394,6 +430,8 @@ modify_from_db_columns() {
 		# Write stuff to database 
 		[ -e $TMPFILE ] && rm $TMPFILE
 	fi
+
+	unset CLAUSE
 }
 
 
