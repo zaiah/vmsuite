@@ -47,17 +47,16 @@ VM Creation Options:
 -n | --new <arg>                desc
 -r | --remove <arg>             desc
 -m | --morph <arg>              desc
--m | --morph_and_copy <arg>     desc
+-a | --morph_and_copy <arg>     desc
 --from_disk <arg>               desc
--n | --name <arg>               desc
 -u | --uuid <arg>               desc
 -i | --image <arg>              desc
 
 VM Parameter Options: 
--i | --ip_address <arg>         desc
+-p | --ip_address <arg>         desc
 -d | --domain <arg>             desc
 -f | --fs_size <arg>            desc
--r | --ram <arg>                desc
+-x | --ram <arg>                desc
 
 General Options:
 --edit-defaults                 Edit the defaults that ship with vmsuite.
@@ -101,63 +100,52 @@ pick_iso() {
 while [ $# -gt 0 ]
 do
    case "$1" in
-     -i|--ip_address)
-         IP_ADDRESS=true
+     -p|--ip_address)
          shift
          IP_ADDRESS_ARG=$1
       ;;
      -c|--clone)
          CLONE=true
          shift
-         CLONE_ARG=$1
+         NAME=$1
       ;;
      -d|--domain)
-         DOMAIN=true
          shift
-         DOMAIN_ARG=$1
+         DOMAIN=$1
       ;;
      -f|--fs_size)
-         FS_SIZE=true
          shift
-         FS_SIZE_ARG=$1
+         FS_SIZE=$1
       ;;
      -i|--image)
-         IMAGE=true
          shift
-         IMAGE_ARG=$1
+         IMAGE=$1
       ;;
-     -r|--ram)
-         RAM=true
+     -x|--ram)
          shift
-         RAM_ARG=$1
+         RAM=$1
       ;;
      -n|--new)
          NEW=true
          shift
-         NEW_ARG=$1
+         NAME=$1
       ;;
      -r|--remove)
          REMOVE=true
          shift
-         REMOVE_ARG=$1
+         NAME=$1
       ;;
      -m|--morph)
          MORPH=true
          shift
-         MORPH_ARG=$1
+         NAME=$1
       ;;
-     -m|--morph_and_copy)
+     -a|--morph_and_copy)
          MORPH_AND_COPY=true
          shift
-         MORPH_AND_COPY_ARG=$1
-      ;;
-     -n|--name)
-         NAME=true
-         shift
-         NAME_ARG=$1
+         NAME=$1
       ;;
      -u|--uuid)
-         UUID=true
          shift
          UUID_ARG=$1
       ;;
@@ -188,13 +176,78 @@ eval_flags
 # Create a totally new VM.
 if [ ! -z $NEW ]
 then
-	echo "..."
+	# Handles both defaults and user supplied.
+	load_from_db_columns "settings"
+	load_from_db_columns "node_defaults"
+
+	# Is there a cleaner way to find the defualt machine folder?
+	term='Default machine folder:' 
+	DEFAULT_MACHINE_FOLDER=$(VBoxManage list systemproperties | \
+		grep "$term" | awk '{print $4}')
+		#grep "$term" | sed "s/$term//" | sed 's/          //') 
+
+
+	# You'll have to catch each of these errors.
+	# A name could exist here...
+	[ ! -z $VERBOSE ] && "Creating machine $NAME..."
+	VBoxManage createvm \
+		--name "$NAME" \
+		--ostype "$OS_TYPE" \
+		--register
+
+	VBoxManage modifyvm "$NAME" \
+		--memory "$RAM" \
+		--acpi on \
+		--boot1 dvd \
+		--nic1 nat \
+		--nictype1 "82543GC" \
+		--nic2 hostonly \
+		--nictype2 "82545EM" \
+		--hostonlyadapter2 "vboxnet1"  # This will change often...
+
+	[ ! -z $VERBOSE ] && "Creating machine storage at $DEFAULT_MACHINE_FOLDER..."
+
+	VBoxManage createhd \
+		--filename "${DEFAULT_MACHINE_FOLDER}/${NAME}.vdi" \
+		--size "$FS_SIZE"
+	
+	VBoxManage storagectl "$NAME" \
+		--name "IDE Controller" \
+		--add "ide" \
+		--controller PIIX4
+
+	VBoxManage storageattach "$NAME" \
+		--storagectl "IDE Controller" \
+		--port 0 \
+		--device 0 \
+		--type hdd \
+		--medium "${DEFAULT_MACHINE_FOLDER}/${NAME}.vdi"
+
+	# Use the CD drive.
+	if [ ! -z $MEDIUM ] 	
+	then
+		# Do some detection.
+		MEDIA="host:/dev/sr0"
+	else
+		MEDIA="$IMAGE"
+	fi	
+
+#read
+	[ ! -z $VERBOSE ] && "Adding external media and boot disc..."
+	VBoxManage storageattach "$NAME" \
+		--storagectl "IDE Controller" \
+		--port 0 \
+		--device 1 \
+		--type dvddrive \
+		--medium "$MEDIA"
 fi
 
 # Remove a VM.
 if [ ! -z $REMOVE ]
 then
-	echo "..."
+	[ -z $NAME ] && echo "Nothing to delete!" && usage 1
+	[ ! -z $VERBOSE ] && echo "Removing VM: $NAME"
+	VBoxManage unregistervm $NAME --delete
 fi
 
 # Clone a single VM. 

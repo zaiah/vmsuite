@@ -106,6 +106,7 @@ function join() {
 	echo "$*"
 }
 
+
 # _get_vm_by_id() 
 # Retrieve a vm by ID.  Don't repeat anywhere.
 get_by_id() {
