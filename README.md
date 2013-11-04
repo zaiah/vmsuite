@@ -101,9 +101,8 @@ Build a guest containing some image.
 
 catch identifier
 catch --to argument since it will be another profile
-write lib routine to load all arguments at once
+write lib routine to load all arguments at once (need the ability to load different profiles)
 
--a | --ip-address <N>        Define an IP address for the new node.
 -c | --clone <name>          Define a new name for the clone.
 -d | --domain <domain>       Define an actual domain name for the new node.
 -f | --fs-size <N in mb>     Define the size of the node's filesystem.
@@ -116,6 +115,22 @@ write lib routine to load all arguments at once
 -s | --morph-and-copy <VM_NAME>  Should morph and copy/clone a VM.
 -e | --name <VM_NAME>		  Use name as identifier when morphing.
 -u | --uuid <VM_UUID>        Use uuid as identiifer when morphing.
+
+
+-z | --nw-bandwidth          Set soft network bandwidth limit
+-y | --disk-bandwidth        Set soft disk usage bandwidth limit
+-b | --balloon <ARG>         Set balloon size.
+-x | --cpus <ARG>            Set CPU count. 
+-xl | --cpu-limit <ARG>      Set CPU exec limit
+
+*ALL VMs MUST BE OFF WHEN USING THESE OPTIONS*
+
+--basefolder ?? (what does this mean for me?)
+--extra-commands 
+	throw what you haven't coded for or set in a db - 
+	1. vram for example on a 3d render farm snapshot server (--vram)
+	2. --boot dvd|disk|net (Different booting shcemes...)
+
 
 
 ## vmmgr (rename to vmsingle and vmmulti?)
@@ -144,17 +159,45 @@ x -f     Starts a new process in the foreground.
 x -h     Show this help message and quit.
 -a     Set an alias for a machine.
 
+
+
 ## vmmulti
 
 This is tough, b/c I think I need to copy nodes somehow, so that they can run.
+
+1. clonevm ( --options link may be the answer... )
+2. Less pretty option is running nfs shares (via some profile:
+	and making sure the script handles the finer details)
 
 
 ## vmwatch 
 
 Tracks stats on different vms.  memory, disk free, any other data that you can fit in.
 
+--gueststatisticsinterval
+metrics
+
 
 ## vmnet
 
+Need a way to create hostonly, internal and bridged networks
+VBoxManage hostonlyif \
+	create <NAME OF IF> \
+	--ip <IP_ADDR> \
+	--netmask 255.255.255.0
+
+[hostonly,bridged]ifs - List all host only and bridged networks on the box.
+
+
+Pretty sure the node's tables should be handled here too...
+--ip-address
+--domain
+bla...
+
 Does some network goodness to different VM's.
 More specifically, vmnet can put the different VM's into different network groups, set up these boxes to run with DHCP/Gateways/bla at a specific IP.  Use snapshots, and sed and some other trickery to make it all come together. 
+
+
+## vmroute
+Handle teleporting?
+Could be a pretty seamless way to handle maintenance of differnet alto hosts.

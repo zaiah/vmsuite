@@ -32,13 +32,16 @@ vmsuite=/home/zaiah/projects/vmsuite/vmsuite {
  }
  defaults=defaults {
   nics.sql
+  node.sql
   node_defaults.sql
  }
  sql=sql {
   disk_img.sql
   groups.sql
   keys.sql
+  networks.sql
   nics.sql
+  node.sql
   node_defaults.sql
   settings.sql
   sync_servers.sql

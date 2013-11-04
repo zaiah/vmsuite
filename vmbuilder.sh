@@ -40,26 +40,37 @@ PROGRAM="vmbuilder"                         	# Program name.
 usage() {
    STATUS="${1:-0}"
    echo "Usage: ./${PROGRAM}
-	[ -  ]
+	[ -cnroa ] <vmname>
+	[ -bfmx -xl -bl -nl ] <N in mb>
+	[ -iuvh <arg> ]
 
 VM Creation Options:
--c | --clone <arg>              desc
--n | --new <arg>                desc
--r | --remove <arg>             desc
--m | --morph <arg>              desc
--a | --morph_and_copy <arg>     desc
---from_disk <arg>               desc
--u | --uuid <arg>               desc
--i | --image <arg>              desc
+-c | --clone <vmname>           Clone the machine <vmname>.
+-n | --new <vmname>             Create a new machine called <vmname>.
+-r | --remove <vmname>          Remove a machine called <vmname>.
+-o | --morph <vmname>           Permanently change the settings of machine 
+                                <vmname>.
+-a | --morph-and-copy <vmname>  Clone the machine <vmname> and change the 
+                                clone's settings.
 
-VM Parameter Options: 
--p | --ip_address <arg>         desc
--d | --domain <arg>             desc
--f | --fs_size <arg>            desc
--x | --ram <arg>                desc
+VM Boot Parameters:
+--from-disk                     Choose to boot from disk media. 
+--choose-image                  Choose from a list of .iso or .img files. 
+-i | --image <file>             Choose to boot from an .iso or .img file.
+
+VM Parameter Options 
+(must be used either with --morph, --morph-and-copy or --new flags): 
+-b | --balloon <N>              Set balloon size of RAM for vm selected.
+-f | --fs_size <N>              Set the total disk size of the vm's harddrive.
+-m | --ram <N>                  Set the RAM to be used by the vm. 
+-x | --cpu <N>                  Set the number of CPUs to be used by the vm.
+-xl | --cpu-limit <N>           Set the limit of CPU execution for vm. 
+-bl | --disk-bandwidth <N>      Set the disk i/o limit of vm. 
+-nl | --nw-bandwidth <N>        Set the network i/o limit of vm. 
+-os | --os-type <N>             Set type of O/S intended to deploy with.
 
 General Options:
---edit-defaults                 Edit the defaults that ship with vmsuite.
+-u | --uuid <arg>               Select a VM by <uuid> instead of name. 
 -v | --verbose                  Be verbose in output.
 -h | --help                     Show this help and quit.
 "
@@ -100,32 +111,13 @@ pick_iso() {
 while [ $# -gt 0 ]
 do
    case "$1" in
-     -p|--ip_address)
-         shift
-         IP_ADDRESS_ARG=$1
-      ;;
+		# Actions
      -c|--clone)
          CLONE=true
          shift
          NAME=$1
       ;;
-     -d|--domain)
-         shift
-         DOMAIN=$1
-      ;;
-     -f|--fs_size)
-         shift
-         FS_SIZE=$1
-      ;;
-     -i|--image)
-         shift
-         IMAGE=$1
-      ;;
-     -x|--ram)
-         shift
-         RAM=$1
-      ;;
-     -n|--new)
+		-n|--new)
          NEW=true
          shift
          NAME=$1
@@ -135,7 +127,7 @@ do
          shift
          NAME=$1
       ;;
-     -m|--morph)
+     -o|--morph)
          MORPH=true
          shift
          NAME=$1
@@ -145,15 +137,63 @@ do
          shift
          NAME=$1
       ;;
-     -u|--uuid)
+      -u|--uuid)
          shift
          UUID_ARG=$1
       ;;
-     -f|--from_disk)
-         FROM_DISK=true
+
+		# Parameters
+		-b|--balloon)
+			shift
+			BALLOON=$1
+		;;
+     -f|--fs_size)
          shift
-         FROM_DISK_ARG=$1
+         FS_SIZE=$1
       ;;
+     -m|--ram)
+         shift
+         RAM=$1
+      ;;
+		-x|--cpus)
+			shift
+			CPUS=$1
+		;;
+		-xl|--cpu-limit)
+			shift
+			CPU_EX=$1
+		;;
+		-bl|--disk-bandwidth)
+			shift
+			DISK_BW=$1
+		;;
+		-nl|--nw-bandwidth)
+			shift
+			NET_BW=$1
+		;;
+		-os|--os-type)
+			shift
+			OS_TYPE=$1
+		;;
+
+		# Boot parameters
+      --choose-image)
+			USE_IMAGE=true
+			CHOOSE_IMAGE=true
+		;;
+
+      -i|--image)
+			USE_IMAGE=true
+         shift
+         IMAGE=$1
+      ;;
+
+      -f|--from-disk)
+			USE_IMAGE=true
+         FROM_DISK=true
+      ;;
+
+		# General options.
       -v|--verbose)
         VERBOSE=true
       ;;
@@ -197,6 +237,9 @@ then
 
 	VBoxManage modifyvm "$NAME" \
 		--memory "$RAM" \
+		--guestmemoryballoon "$BALLOON" \
+		--cpus "$CPUS" \
+		--cpuexecutioncap "$CPU_EX" \
 		--acpi on \
 		--boot1 dvd \
 		--nic1 nat \
@@ -204,6 +247,27 @@ then
 		--nic2 hostonly \
 		--nictype2 "82545EM" \
 		--hostonlyadapter2 "vboxnet1"  # This will change often...
+
+	# Set nw i/o limit
+	# Not catching flags...
+	if [ ! -z "$NET_BW" ] && $(( $NET_BW > 0 ))
+	then
+		[ ! -z $VERBOSE ] && "Setting network I/O limit on $NAME"
+		VBoxManage bandwidthctl $NAME \
+			add "nwlim" \
+				--type network \
+				--limit ${NET_BW} # megabit limit
+	fi
+
+	# Set disk i/o limit
+	if [ ! -z "$DISK_BW" ] && $(( $DISK_BW > 0 ))
+	then
+		[ ! -z $VERBOSE ] && "Setting disk I/O limit on $NAME"
+		VBoxManage bandwidthctl $NAME \
+			add "hddlim" \
+				--type disk \
+				--limit ${DISK_BW} # megabit limit
+	fi
 
 	[ ! -z $VERBOSE ] && "Creating machine storage at $DEFAULT_MACHINE_FOLDER..."
 
@@ -223,23 +287,83 @@ then
 		--type hdd \
 		--medium "${DEFAULT_MACHINE_FOLDER}/${NAME}.vdi"
 
-	# Use the CD drive.
-	if [ ! -z $MEDIUM ] 	
+	# Mount boot media while creating. 
+	if [ ! -z $USE_IMAGE ] 	
 	then
-		# Do some detection.
-		MEDIA="host:/dev/sr0"
+		# Choose the first hard disk.
+		if [ ! -z $FROM_DISK ] 
+		then
+			# Assume the first disk drive on most *nix.
+			ASSUMED_MEDIUM="/dev/sr0"
+
+			# You'll need to check and make sure this device exists.
+			if [ ! -b "$ASSUMED_MEDIUM" ] 
+			then 
+				echo "No disk drive found at $ASSUMED_MEDIUM." 
+				MEDIA=
+			else
+				MEDIA="host:${ASSUMED_MEDIUM}"
+			fi
+
+		# Bring up selection menu.
+		elif [ ! -z $CHOOSE_IMAGE ]
+		then
+			# Show a nice little dialog.
+			echo "Please select the image you like to use for your new node:"
+
+			# Show a long menu.
+			ISO_DIR="$HOME/vm/iso"
+			declare -a AVAIL_IMGS=( $(find -L "$ISO_DIR" -iname "*.iso") ) 
+			for __PCOUNT in $(seq 0 ${#AVAIL_IMGS[*]})
+			do
+				if [ $__PCOUNT == ${#AVAIL_IMGS[*]} ]
+				then
+					break
+				fi	
+				__AI_INDEX=$(( $__PCOUNT + 1 ))
+				printf "\t${__AI_INDEX})${AVAIL_IMGS[${__PCOUNT}]}\n"
+			done
+
+			read ANS 
+			__AI_USER_SEL=$(( $ANS - 1 ))
+
+			# Should we have any reason to mount this?
+			MEDIA="${AVAIL_IMGS[$__AI_USER_SEL]}"
+
+		# Use a supplied image filename.
+		else
+			if [ ! -f $IMAGE ] 
+			then 
+				echo "The selected iso image does not seem to exist."
+				echo "Did you use the correct path?"
+				exit 1
+			else
+				MEDIA="$IMAGE"
+			fi
+		fi
+	fi
+
+	# Mount the drive and boot disk.
+	if [ ! -z "$MEDIA" ]
+	then
+		[ ! -z $VERBOSE ] && "Adding external DVD drive and boot disc..."
+		VBoxManage storageattach "$NAME" \
+			--storagectl "IDE Controller" \
+			--port 0 \
+			--device 1 \
+			--type dvddrive \
+			--medium "$MEDIA"
 	else
-		MEDIA="$IMAGE"
+		# Just mount the drive.
+		[ ! -z $VERBOSE ] && "Adding external DVD drive."
+		VBoxManage storageattach "$NAME" \
+			--storagectl "IDE Controller" \
+			--port 0 \
+			--device 1 \
+			--type dvddrive
 	fi	
 
-#read
-	[ ! -z $VERBOSE ] && "Adding external media and boot disc..."
-	VBoxManage storageattach "$NAME" \
-		--storagectl "IDE Controller" \
-		--port 0 \
-		--device 1 \
-		--type dvddrive \
-		--medium "$MEDIA"
+	exit
 fi
 
 # Remove a VM.
