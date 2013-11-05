@@ -46,6 +46,7 @@ usage() {
 --no-server-setup         Skip the whole server setup step.
 --clobber                 Totally overwrite your old setup.
 --install                 Create executable links at $HOME/bin.
+--uninstall               Remove executable links.
 --set-host-directory      Use a different directory for db's and program files.
                           (default is $HOME/.vmsuite)
 --set-install-directory   Use a different directory for executable links.
