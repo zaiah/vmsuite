@@ -30,7 +30,7 @@
 #-----------------------------------------------------#
 
 #source "$(dirname "$(readlink -f $0)")/conf/__config.sh"
-BINDIR="$(dirname "$(readlink -f $0)")"   # The program's directory.
+#BINDIR="$(dirname "$(readlink -f $0)")"   # The program's directory.
 
 # Giant list that will be maintanined here.
 __SQLITE="/usr/bin/sqlite3"
