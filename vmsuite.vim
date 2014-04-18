@@ -2,14 +2,15 @@
 vmsuite=/home/zaiah/projects/vmsuite/vmsuite {
  LICENSE
  README.md
+ gen.sh
  vmbuilder.sh
- vmregister.sh
  vmdefaults.sh
  vmgo.sh
  vmimg.sh
  vmmaster.sh
  vmmgr.sh
  vmnet.sh
+ vmregister.sh
  vmsuite.vim
  vmwatch.sh
  old=old {

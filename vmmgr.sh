@@ -42,14 +42,14 @@ usage() {
    echo "Usage: ./${PROGRAM}
 	[ -  ]
 
--l|--list           desc
--f|--foreground     desc
--b|--background     desc
--n|--name           desc
--a|--alias          desc
--k|--kill           desc
--r|--restart        desc
--s|--snap           desc
+-l|--list           List all running vms. 
+-f|--foreground     Start a VM in the foreground. 
+-b|--background     Start a VM in the background. 
+-n|--name           Refer to a vm by name. 
+-a|--alias          Use an alias for a VM. 
+-k|--kill           Kill a particualr VM 
+-r|--restart        Restart a VM. 
+-s|--snap           Take a snapshot of a VM. 
 -v|--verbose        Be verbose in output.
 -h|--help           Show this help and quit.
 "
@@ -67,9 +67,13 @@ do
       ;;
      -f|--foreground)
          FOREGROUND=true
+			shift
+			VMNAME="$1"
       ;;
      -b|--background)
          BACKGROUND=true
+			shift
+			VMNAME="$1"
       ;;
      -n|--name)
          NAME=true
@@ -79,12 +83,31 @@ do
       ;;
      -k|--kill)
          KILL=true
+			shift
+			VMNAME="$1"
+      ;;
+     --hardkill)
+         HARDKILL=true
+			shift
+			VMNAME="$1"
       ;;
      -r|--restart)
          RESTART=true
+			shift
+			VMNAME="$1"
       ;;
      -s|--snap)
          SNAP=true
+			shift
+			VMNAME="$1"
+      ;;
+      --is-running)
+        IS_RUNNING=true
+			shift
+			VMNAME="$1"
+      ;;
+      --script)
+        SCRIPT=true
       ;;
       -v|--verbose)
         VERBOSE=true
@@ -104,42 +127,48 @@ done
 # Set verbosity and other flags.
 eval_flags
 
-if [ ! -z $LIST ]
-then
-   echo '...'
-fi
+[ ! -z $IS_RUNNING ] && {
+	if [ ! -z "$SCRIPT" ] 
+	then
+		if [ ! -z "`VBoxManage list runningvms | grep "$VMNAME"`" ]
+		then
+			printf "true\n"
+		else
+			printf "false\n"
+		fi	
 
-if [ ! -z $FOREGROUND ]
-then
-   echo '...'
-fi
+	else
+		if [ ! -z "`VBoxManage list runningvms | grep "$VMNAME"`" ]
+		then
+			printf "$VMNAME is running.\n"
+		else
+			printf "$VMNAME is not running.\n"
+		fi	
+	fi	
+}
 
-if [ ! -z $BACKGROUND ]
-then
-   echo '...'
-fi
+[ ! -z $LIST ] && VBoxManage list vms
 
-if [ ! -z $NAME ]
-then
-   echo '...'
-fi
+[ ! -z $FOREGROUND ] && VBoxManage startvm "$VMNAME" --type gui 
+
+[ ! -z $BACKGROUND ] && VBoxManage startvm "$VMNAME" --type headless & 
 
 if [ ! -z $ALIAS ]
 then
    echo '...'
 fi
 
-if [ ! -z $KILL ]
-then
-   echo '...'
-fi
+[ ! -z $KILL ] && VBoxManage controlvm "$VMNAME" acpipowerbutton 
 
-if [ ! -z $RESTART ]
-then
-   echo '...'
-fi
+[ ! -z $HARDKILL ] && VBoxManage controlvm "$VMNAME" poweroff 
 
-if [ ! -z $SNAP ]
-then
-   echo '...'
-fi
+[ ! -z $RESTART ] && {
+	VBoxManage controlvm "$VMNAME" poweroff
+	VBoxManage startvm "$VMNAME" --type headless 
+}
+
+[ ! -z $SNAP ] && {
+	VBoxManage snapshot "$VMNAME" \
+		take $SNAPSHOT_NAME \
+		--description "$SNAPSHOT_DESCRIPTION"
+}
